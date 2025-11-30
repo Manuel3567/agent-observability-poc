@@ -48,4 +48,4 @@ jobs:
                   cd infra
                   uv sync
                   source .venv/bin/activate
-                  cdk deploy
+                  cdk deploy --require-approval never
