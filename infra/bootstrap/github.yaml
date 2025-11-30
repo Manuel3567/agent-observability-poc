@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create an IAM Identity Provider for GitHub and a role for federated access
+
+Parameters:
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository in the format owner/repo-name (e.g. username/repo)
+
+Resources:
+  GitHubOIDCProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+  
+  GitHubIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: my-github-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Sub arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepo}:*
+
+      # Optionally add policies or attach managed policies
+      ManagedPolicyArns:
+       - arn:aws:iam::aws:policy/AdministratorAccess
+
+Outputs:
+  RoleArn:
+    Description: ARN of the GitHub IAM role
+    Value: !GetAtt GitHubIAMRole.Arn
+
+  OIDCProviderArn:
+    Description: ARN of the GitHub OIDC Provider
+    Value: !Ref GitHubOIDCProvider

@@ -1,0 +1,47 @@
+name: Deploy Application
+
+on:
+    push:
+        branches:
+            - "master"
+
+permissions:
+    id-token: write # Required for OIDC
+    contents: read # To checkout the repo
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: setup node
+              uses: actions/setup-node@v6
+              with:
+                node-version: 24
+            - name: Checkout source
+              uses: actions/checkout@v4
+
+            - name: Configure AWS credentials via OIDC
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
+                  aws-region: ${{ vars.AWS_REGION }}
+
+            - name: Install uv
+              uses: astral-sh/setup-uv@v6
+
+            - name: "Set up Python"
+              uses: actions/setup-python@v5
+              with:
+                  python-version-file: "app/.python-version"
+
+            - name: Build and package agent as a wheel
+              run: |
+                  cd app
+                  uv build
+            - name: Install cdk
+              run: npm install -g aws-cdk
+            - name: Deploy Compute
+              run: |
+                  cd infra
+                  cdk deploy
