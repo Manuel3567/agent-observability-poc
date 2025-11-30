@@ -1,0 +1,17 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Manuel Schuler", email = "60062851+Manuel3567@users.noreply.github.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "strands-agents>=1.18.0",
+    "strands-agents-tools>=0.2.16",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
