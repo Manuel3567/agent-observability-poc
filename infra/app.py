@@ -19,10 +19,9 @@ class AgentStack(Stack):
         self, scope: Construct, construct_id: str, vpc_id: str, **kwargs
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        vpc = ec2.Vpc.from_vpc_attributes(
+        vpc = ec2.Vpc.from_lookup(
             self,
             "VPC",
-            availability_zones=["eu-central-1a", "eu-central-1b", "eu-central-1c"],
             vpc_id=vpc_id,
         )
         cluster = ecs.Cluster(self, "Cluster", vpc=vpc)
@@ -40,9 +39,17 @@ class AgentStack(Stack):
             assumed_by=iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
         )
         execution_role.add_managed_policy(
-            iam.ManagedPolicy.from_aws_managed_policy_name(
-                "AmazonECSTaskExecutionRolePolicy"
+            iam.ManagedPolicy.from_managed_policy_arn(
+                self,
+                "EcsTaskPolicy",
+                "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
             )
+        )
+        task_sg = ec2.SecurityGroup(
+            self,
+            "TaskSG",
+            vpc=vpc,
+            allow_all_outbound=True,
         )
         task_definition = ecs.FargateTaskDefinition(
             self,
@@ -64,7 +71,14 @@ class AgentStack(Stack):
 load_dotenv()
 app = cdk.App()
 vpc_id = os.environ["VPC_ID"]
+region = os.environ["AWS_REGION"]
+account = os.environ["AWS_ACCOUNT_ID"]
 
-AgentStack(app, "AgentStack", vpc_id)
+AgentStack(
+    app,
+    "AgentStack",
+    vpc_id,
+    env=cdk.Environment(region=region, account=account),
+)
 
 app.synth()

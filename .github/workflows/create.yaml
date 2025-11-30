@@ -44,6 +44,8 @@ jobs:
             - name: Deploy Compute
               env:
                   VPC_ID: ${{ vars.VPC_ID }}
+                  AWS_REGION: ${{ vars.AWS_REGION }}
+                  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
               run: |
                   cd infra
                   uv sync
