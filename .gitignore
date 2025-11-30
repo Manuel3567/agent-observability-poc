@@ -245,5 +245,3 @@ node_modules/
 # PyCharm
 .idea/
 
-# pyenv
-.python-version
