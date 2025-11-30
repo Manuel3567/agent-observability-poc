@@ -42,6 +42,8 @@ jobs:
             - name: Install cdk
               run: npm install -g aws-cdk
             - name: Deploy Compute
+              env:
+                  VPC_ID: ${{ vars.VPC_ID }}
               run: |
                   cd infra
                   uv sync
