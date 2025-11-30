@@ -10,6 +10,7 @@ from constructs import Construct
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_logs as logs
 
 from dotenv import load_dotenv
 
@@ -60,9 +61,19 @@ class AgentStack(Stack):
             execution_role=execution_role,
         )
 
+        log_group = logs.LogGroup(
+            self,
+            "ContainerLogGroup",
+            log_group_name="/ecs/agent",
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+        )
         task_definition.add_container(
             "DefaultContainer",
             image=ecs.ContainerImage.from_asset("../app/"),
+            logging=ecs.LogDrivers.aws_logs(
+                stream_prefix="agent",
+                log_group=log_group,
+            ),
         )
 
 

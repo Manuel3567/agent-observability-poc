@@ -245,3 +245,4 @@ node_modules/
 # PyCharm
 .idea/
 
+cdk.context.json
